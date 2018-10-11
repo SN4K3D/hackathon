@@ -13,6 +13,7 @@
     <div id="UpPage"><img src="media/icons/hautdepage.png" width="40" height="40"></div>
 
     <!--Script de la page d'accueil : insta et Map-->
+    <script type="text/javascript" src="./javascript/noty.js"></script>
     <script type="text/javascript" src="./javascript/mapFilter.js"></script>
     <script type="text/javascript" src="./javascript/apiInsta.js"></script>
     <script type="text/javascript" src="./javascript/home.js"></script>

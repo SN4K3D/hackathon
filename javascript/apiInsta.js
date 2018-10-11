@@ -1,4 +1,4 @@
-const TIME_UPDATE_INSTA = 30000;
+const TIME_UPDATE_INSTA = 10000;
 var hashtag = "code4marseille";
 
 
@@ -72,13 +72,13 @@ function ajaxInfos() {
     });
   }
 
-     
+
 
 
 //Id des photos du live insta !
 var idInsta = [];
 
-function ajaxMap(hashtag = "code4marseille") 
+function ajaxMap(hashtag = "code4marseille")
 {
 
     var UrlApi = "https://myprovence.code4marseille.fr/api/instas?tags=" + hashtag;
@@ -155,6 +155,80 @@ function ajaxMap(hashtag = "code4marseille")
   });
 }
 
+function bubbleSort(a, par) {
+    var swapped;
+    do {
+        swapped = false;
+        for (var i = 0; i < a.length - 1; i++) {
+            if (a[i][par] < a[i + 1][par]) {
+                var temp = a[i];
+                a[i] = a[i + 1];
+                a[i + 1] = temp;
+                swapped = true;
+            }
+        }
+    } while (swapped);
+}
+
+function getNotification(nb) {
+    fetch("https://myprovence.code4marseille.fr/api/instas")
+      .then (function(response){
+        return response.json();
+      })
+      .then (function(objetJson){
+        var tagsList = {};
+        for(var i = 0, iMax = objetJson["hydra:member"].length; i < iMax; i++) {
+            var currentInsta = objetJson["hydra:member"][i];
+            var listOfTags = currentInsta.tags.split(",");
+            for(var j = 0, jMax = listOfTags.length; j < jMax; j++) {
+                var currentTag = listOfTags[j];
+                if(currentTag) {
+                    if(tagsList.hasOwnProperty(currentTag)) {
+                        tagsList[currentTag]["iteration"] += 1;
+                    } else {
+                        tagsList[currentTag] = {
+                            "name": currentTag,
+                            "iteration": 1
+                        };
+                    }
+                }
+            }
+        }
+
+        var tab = [];
+        for(var tag in tagsList) {
+            if(tagsList.hasOwnProperty(tag)) {
+                if(tagsList[tag]["iteration"] < 5) {
+                    delete tagsList[tag];
+                    continue;
+                } else {
+                    tab.push(tagsList[tag]);
+                }
+            }
+        }
+
+        bubbleSort(tab, "iteration");
+        tab = tab.slice(0, nb);
+
+        $( document ).ready(() => {
+            for(var i = 0; i < tab.length; i++) {
+                var hastagName = tab[i]['name'];
+                var msg = "<b>#"+hastagName+"</b> is now a trend!";
+                var n = new Noty({
+                    text: msg,
+                    layout: 'topCenter',
+                    animation: {
+                        open: 'animated bounceInDown', // Animate.css class names
+                        close: 'animated bounceOutUp' // Animate.css class names
+                    }
+                });
+                n.show();
+                n.setTimeout(3000);
+            }
+        });
+    });
+}
+
 
 //On charge les icone de la carte et on lance l'intervale d'actualisation
 
@@ -164,4 +238,5 @@ ajaxMap();
 setInterval(function () {
     ajaxMap(hashtag);
     ajaxInfos();
+    getNotification(2);
 }, TIME_UPDATE_INSTA);
