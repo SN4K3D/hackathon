@@ -9,29 +9,87 @@
 	<link href="https://fonts.googleapis.com/css?family=Roboto:700" rel="stylesheet">
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 
-
 	<link rel="stylesheet" href="css/main.css">
 </head>
- 
+
 <body>
+    <script>
+    function bubbleSort(a, par) {
+        var swapped;
+        do {
+            swapped = false;
+            for (var i = 0; i < a.length - 1; i++) {
+                if (a[i][par] < a[i + 1][par]) {
+                    var temp = a[i];
+                    a[i] = a[i + 1];
+                    a[i + 1] = temp;
+                    swapped = true;
+                }
+            }
+        } while (swapped);
+    }
+
+    fetch("https://myprovence.code4marseille.fr/api/instas")
+      .then (function(response){
+        return response.json();
+      })
+      .then (function(objetJson){
+        var tagsList = {};
+        for(var i = 0, iMax = objetJson["hydra:member"].length; i < iMax; i++) {
+            var currentInsta = objetJson["hydra:member"][i];
+            var listOfTags = currentInsta.tags.split(",");
+            for(var j = 0, jMax = listOfTags.length; j < jMax; j++) {
+                var currentTag = listOfTags[j];
+                if(currentTag) {
+                    if(tagsList.hasOwnProperty(currentTag)) {
+                        tagsList[currentTag]["iteration"] += 1;
+                    } else {
+                        tagsList[currentTag] = {
+                            "name": currentTag,
+                            "iteration": 1
+                        };
+                    }
+                }
+            }
+        }
+
+        var tab = [];
+        for(var tag in tagsList) {
+            if(tagsList.hasOwnProperty(tag)) {
+                if(tagsList[tag]["iteration"] < 5) {
+                    delete tagsList[tag];
+                    continue;
+                } else {
+                    tab.push(tagsList[tag]);
+                }
+            }
+        }
+
+        bubbleSort(tab, "iteration");
+        tab = tab.slice(0, 5);
+
+        $(document).ready(function(){
+            var liToAdd = "";
+            for(var i = 0; i < tab.length; i++) {
+                liToAdd += '<li><span>'+(i+1)+') <b>#'+tab[i]["name"]+'</b> - '+tab[i]["iteration"]+' posts!</span></li>';
+                console.log(liToAdd);
+                $("#notif1 ul").append(liToAdd);
+                 document.getElementById("notif1").innerHTML = liToAdd;
+            }
+        });
+    });
+    </script>
 
 	<header> <!-- /header -->
 		<a href="#" title="Page d'Accueil"><img src="img/code4marseille.png" alt="logo code4marseille"></a>
- 		<h1>Notifications</h1>
+ 		<h1>Top trends</h1>
  	</header>
-		
-	 		<ul> <!--POUR LES li : METTRE DES A OU PAS -->
-	 			<li>#code4marseille</li>
-	 			<li>#code4marseille</li>
-	 			<li>#code4marseille</li>
-	 			<li>#code4marseille</li>
-	 			<li>#code4marseille</li>
-	 		</ul>
-
+    <content>
+	 		<ul id="notif1"></ul>
+    </content>
 
 <!--<i class="fas fa-bell"></i>   IMAGE CLOCHE NON BARREE-->
 <!--<i class="fas fa-bell-slash"></i>    IMAGE CLOCHE BARREE-->
-
-
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 </body>
 </html>
